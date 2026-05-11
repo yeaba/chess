@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Notebook - Birthday Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Indie+Flower&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --paper-bg: #fdfaf3;
+            --line-color: #e8e2d5;
+            --text-dark: #333;
+            --accent-gold: #b8860b;
+            --ink-blue: #2b4570;
+            --ink-red: #b22222;
+            --sticky-yellow: #fff3a3;
+            --sticky-pink: #ffcce6;
+            --tape-color: #e3d9c6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #dcd6c8;
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- Intro Dialogue Box (Scrap Paper) --- */
+        #intro-dialogue {
+            position: absolute;
+            z-index: 100;
+            background: #fff;
+            padding: 2rem;
+            width: 320px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            transform: rotate(-2deg);
+            border: 1px solid #eee;
+            text-align: center;
+            background-image: radial-gradient(#ddd 1px, transparent 1px);
+            background-size: 15px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            border-radius: 2px;
+        }
+
+        #intro-dialogue::after {
+            content: '';
+            position: absolute;
+            top: -10px; left: 50%;
+            width: 40px; height: 20px;
+            background: rgba(255,255,255,0.5);
+            transform: translateX(-50%);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .intro-text {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 1.2rem;
+            line-height: 1.4;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .hand-btn {
+            font-family: 'Architects Daughter', cursive;
+            background: transparent;
+            border: 2px solid var(--text-dark);
+            padding: 0.5rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .hand-btn:hover {
+            transform: scale(1.1) rotate(2deg);
+            background: #f0f0f0;
+        }
+
+        /* --- Poof Animation --- */
+        @keyframes poof {
+            0% { transform: scale(1) rotate(-2deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(5deg); opacity: 0; filter: blur(10px); }
+        }
+
+        .poof-out { animation: poof 0.4s ease-out forwards; pointer-events: none; }
+
+        /* --- Notebook Background --- */
+        .notebook-page {
+            background-color: var(--paper-bg);
+            width: 95%;
+            max-width: 600px;
+            min-height: 650px;
+            padding: 2.5rem 2rem;
+            box-shadow: 10px 10px 30px rgba(0,0,0,0.1);
+            border-radius: 2px;
+            position: relative;
+            background-image: linear-gradient(var(--line-color) 1px, transparent 1px);
+            background-size: 100% 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: scale(0.9) rotate(-5deg);
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .notebook-page.open {
+            opacity: 1;
+            transform: scale(1) rotate(-1deg);
+        }
+
+        .notebook-page::before {
+            content: '';
+            position: absolute;
+            left: 40px;
+            top: 0; bottom: 0;
+            width: 1px;
+            background-color: #ffadad;
+        }
+
+        /* --- Stages --- */
+        .stage {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- Stage 1: The Box Reveal --- */
+        #box-wrapper {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 2rem 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gift-box {
+            width: 120px;
+            height: 120px;
+            background: #d4c8b0;
+            border: 2px solid #b8a98f;
+            position: relative;
+            z-index: 5;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tape {
+            position: absolute;
+            background: var(--tape-color);
+            border: 1px solid rgba(0,0,0,0.1);
+            height: 30px;
+            width: 140px;
+            z-index: 10;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+
+        .tape-removed {
+            opacity: 0;
+            transform: translateY(-50px) rotate(20deg) scale(1.2) !important;
+        }
+
+        .birthday-text {
+            font-family: 'Architects Daughter', cursive;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: var(--ink-blue);
+        }
+
+        .queen-container {
+            position: relative;
+            margin: 1rem 0;
+            height: 240px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .queen-icon {
+            font-size: 11rem;
+            color: var(--accent-gold);
+            filter: drop-shadow(0 0 15px rgba(184, 134, 11, 0.3));
+            transition: transform 0.3s;
+        }
+
+        .crown-icon {
+            position: absolute;
+            top: -25px;
+            font-size: 4rem;
+            color: var(--accent-gold);
+            opacity: 0;
+        }
+
+        @keyframes bounceInQueen {
+            0% { transform: scale(0); opacity: 0; }
+            60% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes bounceInCrown {
+            0% { transform: translateY(-150px); opacity: 0; }
+            60% { transform: translateY(15px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .animate-queen { animation: bounceInQueen 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-crown { animation: bounceInCrown 1s ease 0.4s forwards; }
+
+        /* --- Stage 2 Transition Logic --- */
+        .sticky-container {
+            display: flex;
+            gap: 1.5rem;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .sticky-note {
+            flex: 1;
+            padding: 1.5rem;
+            min-height: 280px;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.1);
+            position: relative;
+            opacity: 0;
+            transform: translateY(100px) rotate(10deg);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .sticky-note.reward { background: var(--sticky-yellow); }
+        .sticky-note.risk { background: var(--sticky-pink); }
+
+        .sticky-note.visible { opacity: 1; transform: translateY(0) rotate(var(--rot)); }
+
+        .sticky-title {
+            font-family: 'Architects Daughter', cursive;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            display: block;
+        }
+
+        .sticky-content {
+            font-family: 'Indie Flower', cursive;
+            font-size: 1.15rem;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .signature-line {
+            margin-top: 3rem;
+            width: 100%;
+            text-align: right;
+            font-family: 'Architects Daughter', cursive;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        /* --- Global Helpers --- */
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .hint-footer {
+            margin-top: auto;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. FAKE CHOICE INTRO -->
+    <div id="intro-dialogue">
+        <p class="intro-text">Are you really sure you want to proceed with the massacre?</p>
+        <div class="button-row">
+            <button class="hand-btn" onclick="openJournal()">YES</button>
+            <button class="hand-btn" onclick="openJournal()">YEA</button>
+        </div>
+    </div>
+
+    <!-- 2. THE NOTEBOOK -->
+    <div class="notebook-page" id="page">
+        
+        <!-- STAGE 1: BIRTHDAY GIFT -->
+        <div id="stage-1" class="stage">
+            <p class="birthday-text fade-in">But first, your late birthday gift! Happy Birthday :)</p>
+            
+            <div id="box-wrapper" onclick="handleUnwrap()">
+                <div class="gift-box" id="the-box"></div>
+                <!-- 5 Layers of tape -->
+                <div class="tape" style="transform: rotate(45deg);"></div>
+                <div class="tape" style="transform: rotate(-45deg);"></div>
+                <div class="tape" style="transform: rotate(10deg); width: 150px; height: 35px;"></div>
+                <div class="tape" style="transform: rotate(90deg);"></div>
+                <div class="tape" style="transform: rotate(-10deg); width: 160px;"></div>
+            </div>
+
+            <div class="queen-container" id="queen-reveal-box" onclick="proceedToTransition()">
+                <div class="crown-icon" id="crown-final"><i class="fa-solid fa-crown"></i></div>
+                <div class="queen-icon" id="queen-final"><i class="fa-solid fa-chess-queen"></i></div>
+            </div>
+        </div>
+
+        <!-- STAGE 1.1: MASSACRE INTRO -->
+        <div id="stage-1-1" class="stage">
+            <h1 style="font-family: 'Architects Daughter', cursive; font-size: 2.5rem; margin-top: 4rem;">Ok... now for the massacre.</h1>
+            <p style="font-family: 'Indie Flower', cursive; font-size: 1.4rem; margin-top: 1rem; color: var(--ink-red);">But before we begin...</p>
+            
+            <button class="hand-btn" style="margin-top: 2rem;" onclick="proceedToStakesIntro()">What now?</button>
+        </div>
+
+        <!-- STAGE 1.2: TERMS ANNOUNCEMENT -->
+        <div id="stage-1-2" class="stage">
+            <div style="margin-top: 8rem;">
+                <h2 style="font-family: 'Architects Daughter', cursive; font-size: 2rem; margin-bottom: 1.5rem;">You need to accept the <br>Terms & Conditions.</h2>
+                <p style="font-family: 'Indie Flower', cursive; font-size: 1.2rem; opacity: 0.7;">(No lawyers were harmed in the making of this gift)</p>
+                
+                <button class="hand-btn" style="margin-top: 2rem;" onclick="revealStakes()">Show me the terms</button>
+            </div>
+        </div>
+
+        <!-- STAGE 2: THE STAKES -->
+        <div id="stage-2" class="stage">
+            <h2 style="font-family: 'Architects Daughter', cursive; margin-bottom: 1rem;">Terms & Conditions</h2>
+            
+            <div class="sticky-container">
+                <div class="sticky-note reward" id="note-reward" style="--rot: -2deg;">
+                    <span class="sticky-title">REWARD</span>
+                    <div class="sticky-content">
+                        I will let you be an Arsenal fan without you having to bear our decades of pain. We're just 3 games away from being the greatest team, you can join, at no cost :)
+                    </div>
+                </div>
+
+                <div class="sticky-note risk" id="note-risk" style="--rot: 1deg;">
+                    <span class="sticky-title">RISK</span>
+                    <div class="sticky-content">
+                        You will finally break your legendary streak of never texting first, and you will text me first next time.
+                    </div>
+                </div>
+            </div>
+
+            <div class="signature-line" id="sig-line">
+                Sign Here: X____________________
+            </div>
+        </div>
+
+        <div class="hint-footer" id="hint-text"></div>
+    </div>
+
+    <script>
+        const page = document.getElementById('page');
+        const intro = document.getElementById('intro-dialogue');
+        const stages = {
+            1: document.getElementById('stage-1'),
+            1.1: document.getElementById('stage-1-1'),
+            1.2: document.getElementById('stage-1-2'),
+            2: document.getElementById('stage-2')
+        };
+        
+        let currentStage = 0;
+        let tapeLayers = 5;
+
+        function showStage(stageKey) {
+            Object.values(stages).forEach(s => s.style.display = 'none');
+            stages[stageKey].style.display = 'flex';
+            stages[stageKey].classList.add('fade-in');
+            currentStage = stageKey;
+        }
+
+        function openJournal() {
+            intro.classList.add('poof-out');
+            setTimeout(() => {
+                intro.style.display = 'none';
+                page.classList.add('open');
+                showStage(1);
+            }, 400);
+        }
+
+        function handleUnwrap() {
+            if (tapeLayers > 0) {
+                const tapes = document.querySelectorAll('.tape');
+                tapes[tapeLayers - 1].classList.add('tape-removed');
+                tapeLayers--;
+                
+                document.getElementById('box-wrapper').style.transform = `scale(1.05) rotate(${Math.random() * 4 - 2}deg)`;
+                setTimeout(() => {
+                    document.getElementById('box-wrapper').style.transform = `scale(1) rotate(0deg)`;
+                }, 100);
+
+                if (tapeLayers === 0) {
+                    setTimeout(revealQueen, 500);
+                }
+            }
+        }
+
+        function revealQueen() {
+            const box = document.getElementById('box-wrapper');
+            const reveal = document.getElementById('queen-reveal-box');
+            const queen = document.getElementById('queen-final');
+            const crown = document.getElementById('crown-final');
+            const bText = document.querySelector('.birthday-text');
+
+            box.style.display = 'none';
+            reveal.style.display = 'flex';
+            queen.classList.add('animate-queen');
+            crown.classList.add('animate-crown');
+            
+            bText.innerHTML = "Happy Birthday! :) <br><span style='font-size: 1rem; color: #666;'>You may use this queen at any time.</span>";
+        }
+
+        function proceedToTransition() {
+            if (currentStage !== 1 || tapeLayers > 0) return;
+            showStage(1.1);
+        }
+
+        function proceedToStakesIntro() {
+            if (currentStage !== 1.1) return;
+            showStage(1.2);
+        }
+
+        function revealStakes() {
+            if (currentStage !== 1.2) return;
+            showStage(2);
+
+            setTimeout(() => {
+                document.getElementById('note-reward').classList.add('visible');
+            }, 400);
+
+            setTimeout(() => {
+                document.getElementById('note-risk').classList.add('visible');
+            }, 900);
+
+            setTimeout(() => {
+                document.getElementById('sig-line').style.opacity = '1';
+            }, 1800);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                if (currentStage === 1) {
+                    if (tapeLayers > 0) handleUnwrap();
+                    else proceedToTransition();
+                }
+                else if (currentStage === 1.1) proceedToStakesIntro();
+                else if (currentStage === 1.2) revealStakes();
+            }
+        });
+    </script>
+</body>
+</html>
